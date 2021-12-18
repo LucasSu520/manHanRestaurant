@@ -1,4 +1,4 @@
 package com.dltour.manHanRestaurant.daos;
 
-public class TableDao {
+public class UsersDao extends BasicDao {
 }
