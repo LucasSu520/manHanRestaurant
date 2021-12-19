@@ -37,7 +37,7 @@ public class BasicDao {
             connection=JDBCDruidUtils.getConnection();
             list= qr.query(connection,sql,new BeanListHandler<T>(clazz),parameters);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }finally {
             JDBCDruidUtils.close(null,null,connection);
             return list;

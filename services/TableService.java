@@ -20,9 +20,7 @@ public class TableService {
     public void showAllTables(){
         System.out.println("=====餐座列表=====");
         System.out.println("餐桌号码    是否空闲");
-        rt=new RestaurantTable();
-        List<RestaurantTable> lists= (List<RestaurantTable>) rtd.queryMulti("select * from restaurantTable;",rt.getClass());
-        //TODO 返回的数据不一一对应
+        List<RestaurantTable> lists= rtd.queryMulti("select * from restaurantTable",RestaurantTable.class);
         for (RestaurantTable newRt:lists){
             System.out.println(newRt);
         }
@@ -35,7 +33,7 @@ public class TableService {
     public boolean hasEmptyTable(){
         List<RestaurantTable> list= rtd.queryMulti("select * from restaurantTable",RestaurantTable.class);
         for (RestaurantTable newRt:list){
-            if (newRt.isOrder()==false){
+            if (newRt.getIsOrder().equals("否")){
                 return true;
             }
         }
@@ -46,8 +44,8 @@ public class TableService {
      * 判断用户输入的餐座号的餐座是否空闲
      */
     public boolean isTableEmpty(int tableNum){
-        rt=(RestaurantTable) rtd.querySingle("select * from restaurantTable where tableNum=?",rt.getClass(),tableNum);
-        return !rt.isOrder();
+        rt=(RestaurantTable) rtd.querySingle("select * from restaurantTable where tableNum=?",RestaurantTable.class,tableNum);
+        return rt.getIsOrder().equals("否");
     }
 
     /**
@@ -61,6 +59,6 @@ public class TableService {
      * 修改座位好的状态
      */
     public void changeTableToIsOrder(int tableNum){
-        new RestaurantTableDao().update("update restaurantTable set isOrder=? where tableNum=?",true,tableNum);
+        new RestaurantTableDao().update("update restaurantTable set isOrder=? where tableNum=?",this.isTableEmpty(tableNum)?"是":"否",tableNum);
     }
 }
