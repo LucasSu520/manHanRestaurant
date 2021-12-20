@@ -3,14 +3,20 @@ package com.dltour.manHanRestaurant.views;
 import com.dltour.manHanRestaurant.domains.Customer;
 import com.dltour.manHanRestaurant.domains.Users;
 import com.dltour.manHanRestaurant.services.CustomerService;
+import com.dltour.manHanRestaurant.services.DishService;
+import com.dltour.manHanRestaurant.services.OrderService;
 import com.dltour.manHanRestaurant.services.TableService;
+import com.dltour.manHanRestaurant.utils.JDBCUtils;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class MenuView {
     Users user=null;
     TableService ts=new TableService();
     CustomerService customerService=new CustomerService();
+    Connection connection;
 
     public MenuView() {
     }
@@ -29,6 +35,8 @@ public class MenuView {
     public void show(){
         Boolean loop=true;
         Scanner scanner=null;
+        OrderService os=new OrderService();
+        DishService ds=new DishService();
         while (loop) {
             System.out.println("=====二级管理菜单=====");
             System.out.println("1  查询餐桌状态");
@@ -54,26 +62,43 @@ public class MenuView {
                         System.out.println("抱歉，目前没有空座位，无法预定餐桌，请等待有空位;");
                         continue;
                     }
-                    customerService.createCustomer();
-                    Customer customer=customerService.getCustomer();
-                    String customerPhone=customer.getPhoneNum();
-                    //2、让顾客选择餐桌，若餐座不空闲，则无法预定；
-                    customerService.selectTable(customerPhone);
-                    //3、如果餐座选定，则开始点菜，选厨师,更改餐座状态
-
-                    //4、选完就一直等到结账接触餐座状态了；
+                    try {
+                        connection= JDBCUtils.getConnection();
+                        connection.setAutoCommit(false);
+                        customerService.createCustomer();
+                        Customer customer=customerService.getCustomer();
+                        String customerPhone=customer.getPhoneNum();
+                        //2、让顾客选择餐桌，若餐座不空闲，则无法预定；
+                        customerService.selectTable(customerPhone);
+                        //3、如果餐座选定，则开始点菜，选厨师,更改餐座状态
+                        //4、选完就一直等到结账接触餐座状态了；
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }finally {
+                        try {
+                            connection.commit();
+                            connection.close();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
                 case 3->{
-                    System.out.println("=====菜品列表=====");
+                    System.out.println("========菜品列表===========");
+                    System.out.println("ID      名称           价格");
+                    ds.showAll();
                 }
                 case 4->{
-                    System.out.println("=====点餐服务=====");
+                    System.out.println("=====加餐服务=====");
+                    os.addDish();
                 }
                 case 5->{
                     System.out.println("=====查看账单=====");
+                    os.showOrder();
                 }
                 case 6->{
                     System.out.println("=====结账=====");
+
                 }
                 case 8->{
                     System.out.println("=====切换账号=====");

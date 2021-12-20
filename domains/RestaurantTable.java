@@ -26,6 +26,7 @@ public class RestaurantTable {
 
     @Override
     public String toString() {
-        return (String.format("%2d",this.getTableNum())+"          "+(this.isOrder.equals("否")?"是":"否"));
+        return String.format("%-8d",this.getTableNum())
+                +(this.isOrder.equals("否")?"是":"否");
     }
 }

@@ -27,4 +27,5 @@ public class Dish_Cook {
     public void setCookId(int cookId) {
         this.cookId = cookId;
     }
+
 }

@@ -38,4 +38,11 @@ public class Dish {
     public void setPrice(double price) {
         this.price = price;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%-8s",this.getId())
+                +String.format("%-12s",this.getName())
+                +this.getPrice();
+    }
 }

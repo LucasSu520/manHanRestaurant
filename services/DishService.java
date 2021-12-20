@@ -14,9 +14,18 @@ public class DishService {
     double totalPrice=0;
     Scanner scanner = null;
     DishDao dd = new DishDao();
-    CustomerService cs=new CustomerService();
-    OrderService os=new OrderService();
+    OrderService os;
     TableService ts=new TableService();
+
+    /**
+     * 展示所有的菜品
+     */
+    public void showAll(){
+        List<Dish> dishList=dd.queryMulti("select * from dish",Dish.class);
+        for (Dish dish:dishList){
+            System.out.println(dish);
+        }
+    }
 
     //判断菜品是否存在
     public boolean isExist(int id) {
@@ -33,6 +42,7 @@ public class DishService {
         int dishId = 1;
         boolean dishLoop = true;
         boolean cookLoop = true;
+        os=new OrderService();
         List<Dish_Cook> dishAndCookList =new LinkedList<>();
         //TODO 只能输入数字
         //TODO 在点菜点完后可以删除所点的菜品
