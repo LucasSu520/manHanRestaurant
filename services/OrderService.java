@@ -1,16 +1,13 @@
 package com.dltour.manHanRestaurant.services;
 
-import com.dltour.manHanRestaurant.daos.Customer_Dish_CookDao;
-import com.dltour.manHanRestaurant.daos.Order_Customer_Dao;
-import com.dltour.manHanRestaurant.daos.Order_Dish_Cook_Dao;
-import com.dltour.manHanRestaurant.daos.RestaurantOrderDao;
-import com.dltour.manHanRestaurant.domains.Dish_Cook;
-import com.dltour.manHanRestaurant.domains.Order_Customer;
-import com.dltour.manHanRestaurant.domains.Order_Dish_Cook;
-import com.dltour.manHanRestaurant.domains.RestaurantOrder;
+import com.dltour.manHanRestaurant.daos.*;
+import com.dltour.manHanRestaurant.domains.*;
+import com.dltour.manHanRestaurant.utils.JDBCUtils;
 
 
 import java.math.BigInteger;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,15 +17,19 @@ public class OrderService {
 
     Scanner scanner=null;
     RestaurantOrderDao rod=new RestaurantOrderDao();
+    Connection connection;
     Order_Dish_Cook_Dao odcd=null;
     Order_Dish_Cook odc=null;
     Order_Customer oc=null;
+    Table_Order_Dao tod;
+    Table_Order to;
+    TableService ts;
     DishService ds=new DishService();
     List<Dish_Cook> list;
     int orderId;
     //创建一个新订单，并且提交给数据库;
     public void createOrder(Date date, double price){
-        new RestaurantOrderDao().update("insert into restaurantOrder values(null,?,?)",date,price);
+        new RestaurantOrderDao().update("insert into restaurantOrder values(null,?,?,false)",date,price);
     }
 
     /**
@@ -39,6 +40,9 @@ public class OrderService {
         return ((BigInteger)new RestaurantOrderDao().queryScalar("select LAST_INSERT_ID();")).intValue();
     }
 
+    public RestaurantOrder getOrder(int orderId){
+        return (RestaurantOrder) rod.querySingle("select * from restaurantOrder where id=?",RestaurantOrder.class,orderId);
+    }
     /**
      * 绑定订单和顾客
      */
@@ -129,30 +133,15 @@ public class OrderService {
     /**
      *展示订单信息
      */
-    public void showOrder(){
-        boolean loop=true;
-        RestaurantOrder ro=null;
-        String customerPhone=null;
-        oc=new Order_Customer();
-        while (loop) {
-            System.out.println("请输入要查看的订单编号:");
-            //TODO 限制只能输入数字
-            scanner = new Scanner(System.in);
-            orderId = scanner.nextInt();
-            customerPhone=oc.getCustomerPhone(orderId);
-            ro = (RestaurantOrder) rod.querySingle("select * from restaurantOrder where id=?", RestaurantOrder.class, orderId);
-            if (ro == null || customerPhone==null) {
-                System.out.println("抱歉，输入的订单编号错误，请重新输入!");
-                continue;
-            }
-            loop=false;
-            Dish_Cook dc=new Dish_Cook();
-        }
+    public void showOrder(RestaurantOrder ro){
+
+        String customerPhone;
+        customerPhone=this.getCustomerPhone(ro.getId());
         //TODO 显示顾客名称
-        System.out.println(ro+" 顾客电话:"+customerPhone);
+        System.out.println(ro +" 顾客电话:"+customerPhone);
         System.out.println("=======订单详情=======");
         System.out.println("菜品              厨师");
-        this.showDetail(orderId);
+        this.showDetail(ro.getId());
     }
 
     /**
@@ -162,10 +151,55 @@ public class OrderService {
     public void showDetail(int orderId){
         odcd=new Order_Dish_Cook_Dao();
         odc=new Order_Dish_Cook();
+
         List<Order_Dish_Cook> list=new LinkedList<>();
         list.addAll(odcd.queryMulti("select * from Order_Dish_Cook where orderid=?",Order_Dish_Cook.class,orderId));
         for (Order_Dish_Cook odc1:list){
             System.out.println(odc1);
         }
+    }
+
+    /**
+     * 付款
+     */
+    public void pay(int  orderId) {
+        ts=new TableService();
+        try {
+            connection= JDBCUtils.getConnection();
+            connection.setAutoCommit(false);
+            //修改订单付款状态;
+            rod.update("update restaurantOrder set isPayed=1 where id=?",orderId);
+            //修改餐座状态;
+            ts.changeTableToIsOrder(this.getTableNum(orderId));
+            connection.commit();
+            System.out.println("账单结账成功;");
+            showOrder(this.getOrder(orderId));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    /**
+     * 得到订单绑定的餐座号码
+     * @param orderId 订单号码
+     * @return 餐座号码
+     */
+    public int getTableNum(int orderId){
+        tod=new Table_Order_Dao();
+        to= (Table_Order)tod.querySingle("select * from table_order where orderId=?",Table_Order.class,orderId);
+        return to.getTableId();
+    }
+
+    //根据订单号得到号码
+    public String getCustomerPhone(int orderId){
+        Order_Customer oc= (Order_Customer) new BasicDao().querySingle("select * from order_customer where orderId=?",Order_Customer.class,orderId);
+        return oc.getCustomerPhone();
     }
 }

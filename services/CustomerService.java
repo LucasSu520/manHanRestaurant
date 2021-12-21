@@ -40,11 +40,11 @@ public class CustomerService {
 
     //用户来选择桌子
     public void selectTable(String customerPhone){
-        //TODO 只能输入数字;
         boolean loop=true;
         while (loop) {
             System.out.println("请输入用户选择的桌子");
             scanner = new Scanner(System.in);
+            if (scanner.hasNextInt()){
             tableNum = scanner.nextInt();
             if (!tableService.isTableEmpty(tableNum)) {
                 System.out.println("抱歉，所选桌子已被预定，请重新选择！");
@@ -55,6 +55,9 @@ public class CustomerService {
             new DishService().order(customerPhone,tableNum);
             new TableService().changeTableToIsOrder(tableNum);
             loop=false;
+            }else {
+                System.out.println("输入错误，请重新输入，请输入桌子序号；");
+            }
         }
     }
 }

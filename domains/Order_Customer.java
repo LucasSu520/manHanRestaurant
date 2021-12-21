@@ -3,8 +3,8 @@ package com.dltour.manHanRestaurant.domains;
 import com.dltour.manHanRestaurant.daos.Order_Customer_Dao;
 
 public class Order_Customer {
-    private String customerPhone;
     private int orderId;
+    private String customerPhone;
 
     public Order_Customer() {
     }
@@ -30,9 +30,4 @@ public class Order_Customer {
         this.orderId = orderId;
     }
 
-    public String getCustomerPhone(int orderId){
-        Order_Customer_Dao ocd=new Order_Customer_Dao();
-        String phoneNum=(String) ocd.queryScalar("select customerPhone from order_customer where orderId=?",orderId);
-        return phoneNum;
-    }
 }

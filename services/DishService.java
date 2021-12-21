@@ -41,47 +41,50 @@ public class DishService {
         int cookId = 1;
         int dishId = 1;
         boolean dishLoop = true;
-        boolean cookLoop = true;
+        boolean cookLoop;
         os=new OrderService();
         List<Dish_Cook> dishAndCookList =new LinkedList<>();
-        //TODO 只能输入数字
         //TODO 在点菜点完后可以删除所点的菜品
         while (dishLoop) {
             System.out.println("请输入用户所选菜编号(输入0表示点菜完成):");
             scanner = new Scanner(System.in);
-            dishId = scanner.nextInt();
-            if (dishId == 0) {
-                System.out.println("点菜完成");
-                Date date= new Date(System.currentTimeMillis());
-                //创建一个订单
-                os.createOrder(date,totalPrice);
-                //get the lastest id of the order and give it to order_dish_cook,
-                //向customerDishCook数据库中添加数据；
-                int orderId= os.incrementId();
-                //在这里绑定订单和顾客
-                os.bondCustomer(orderId,customerPhone);
-                //绑定餐座和订单
-                ts.bondOrder(tableNum,orderId);
-                //绑定订单和菜肴和厨师
-                os.bondDishAndCook(orderId,dishAndCookList);
-                break;
-            }
-            //判断是否有该菜品
-            if (isExist(dishId)) {
-                cookLoop=true;
-                while (cookLoop) {
-                    System.out.println("请输入厨师ID(默认是厨师1):");
-                    cookId = scanner.nextInt();
-                    if (!new CookService().isExist(cookId)) {
-                        System.out.println("抱歉输入厨师ID错误，请重新输入！");
-                        continue;
+            if (scanner.hasNextInt()) {
+                dishId = scanner.nextInt();
+                if (dishId == 0) {
+                    System.out.println("点菜完成");
+                    Date date = new Date(System.currentTimeMillis());
+                    //创建一个订单
+                    os.createOrder(date, totalPrice);
+                    //get the lastest id of the order and give it to order_dish_cook,
+                    //向customerDishCook数据库中添加数据；
+                    int orderId = os.incrementId();
+                    //在这里绑定订单和顾客
+                    os.bondCustomer(orderId, customerPhone);
+                    //绑定餐座和订单
+                    ts.bondOrder(tableNum, orderId);
+                    //绑定订单和菜肴和厨师
+                    os.bondDishAndCook(orderId, dishAndCookList);
+                    break;
+                }
+                //判断是否有该菜品
+                if (isExist(dishId)) {
+                    cookLoop = true;
+                    while (cookLoop) {
+                        System.out.println("请输入厨师ID(默认是厨师1):");
+                        cookId = scanner.nextInt();
+                        if (!new CookService().isExist(cookId)) {
+                            System.out.println("抱歉输入厨师ID错误，请重新输入！");
+                            continue;
+                        }
+                        cookLoop = false;
+                        totalPrice = totalPrice + this.getPrice(dishId);
+                        dishAndCookList.add(new Dish_Cook(dishId, cookId));
                     }
-                    cookLoop = false;
-                    totalPrice = totalPrice+ this.getPrice(dishId);
-                    dishAndCookList.add(new Dish_Cook(dishId,cookId));
+                } else {
+                    System.out.println("抱歉，菜品名称输入错误，请重新输入!");
                 }
             }else {
-                System.out.println("抱歉，菜品名称输入错误，请重新输入!");
+                System.out.println("输入错误，请输入数字.");
             }
         }
     }
