@@ -1,6 +1,5 @@
 package com.dltour.manHanRestaurant.domains;
 
-//已经创建数据库
 public class RestaurantTable {
     private Integer tableNum;
     private String isOrder;
@@ -26,7 +25,7 @@ public class RestaurantTable {
 
     @Override
     public String toString() {
-        return String.format("%-8d",this.getTableNum())
+        return String.format("%-13d",this.getTableNum())
                 +(this.isOrder.equals("否")?"是":"否");
     }
 }

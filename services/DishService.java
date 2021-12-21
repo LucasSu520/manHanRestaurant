@@ -1,6 +1,8 @@
 package com.dltour.manHanRestaurant.services;
 
-import com.dltour.manHanRestaurant.daos.DishDao;
+import com.dltour.manHanRestaurant.daoImpl.DishDaoImpl;
+import com.dltour.manHanRestaurant.daoImpl.RestaurantOrderDaoImpl;
+import com.dltour.manHanRestaurant.daoImpl.RestaurantTableDaoImpl;
 import com.dltour.manHanRestaurant.domains.Dish;
 import com.dltour.manHanRestaurant.domains.Dish_Cook;
 
@@ -11,35 +13,35 @@ import java.util.Scanner;
 
 //菜品服务，包括点菜，添加菜品等等；
 public class DishService {
+    RestaurantOrderDaoImpl rodi;
+    RestaurantTableDaoImpl rtdi;
+    DishDaoImpl ddi;
     double totalPrice=0;
     Scanner scanner = null;
-    DishDao dd = new DishDao();
     OrderService os;
     TableService ts=new TableService();
 
     /**
-     * 展示所有的菜品
+     * 返回所有的菜品
      */
     public void showAll(){
-        List<Dish> dishList=dd.queryMulti("select * from dish",Dish.class);
-        for (Dish dish:dishList){
+        ddi=new DishDaoImpl();
+        List<Dish> dishes= ddi.getAllDish();
+        for (Dish dish:dishes){
             System.out.println(dish);
         }
     }
 
-    //判断菜品是否存在
-    public boolean isExist(int id) {
-        Dish dish = (Dish) dd.querySingle("select * from dish where id=?",Dish.class, id);
-        return dish != null;
-    }
 
     /**
      * 点菜，然后绑定订单--菜肴--厨师 和 绑定订单--座号  和  订单和顾客电话
      * @param tableNum 顾客所选的座号
      */
     public void order(String customerPhone,int tableNum) {
-        int cookId = 1;
-        int dishId = 1;
+        rodi=new RestaurantOrderDaoImpl();
+        rtdi=new RestaurantTableDaoImpl();
+        int cookId;
+        int dishId ;
         boolean dishLoop = true;
         boolean cookLoop;
         os=new OrderService();
@@ -52,18 +54,18 @@ public class DishService {
                 dishId = scanner.nextInt();
                 if (dishId == 0) {
                     System.out.println("点菜完成");
+                    rtdi.changeTableStat(tableNum);
                     Date date = new Date(System.currentTimeMillis());
                     //创建一个订单
-                    os.createOrder(date, totalPrice);
-                    //get the lastest id of the order and give it to order_dish_cook,
+                    rodi.createOrder(date, totalPrice);
                     //向customerDishCook数据库中添加数据；
-                    int orderId = os.incrementId();
+                    int orderId = rodi.getIncrementOrder();
                     //在这里绑定订单和顾客
-                    os.bondCustomer(orderId, customerPhone);
+                    rodi.bondCustomer(orderId,customerPhone);
                     //绑定餐座和订单
-                    ts.bondOrder(tableNum, orderId);
+                    rodi.bondTable(tableNum, orderId);
                     //绑定订单和菜肴和厨师
-                    os.bondDishAndCook(orderId, dishAndCookList);
+                    rodi.bondDishAndCook(orderId, dishAndCookList);
                     break;
                 }
                 //判断是否有该菜品
@@ -91,7 +93,17 @@ public class DishService {
 
     //计算菜品价格
     public double getPrice(int id){
-        Dish dish = (Dish) dd.querySingle("select * from dish where id=?", Dish.class, id);
-        return dish.getPrice();
+        ddi=new DishDaoImpl();
+        return ddi.getPrice(id);
+    }
+
+    public String getDishName(int dishId){
+        ddi =new DishDaoImpl();
+       return ddi.getDishName(dishId);
+    }
+
+    public boolean isExist(int dishId){
+        ddi=new DishDaoImpl();
+        return ddi.getDish(dishId)!=null;
     }
 }

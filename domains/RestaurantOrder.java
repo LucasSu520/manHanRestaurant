@@ -1,11 +1,7 @@
 package com.dltour.manHanRestaurant.domains;
 
-
-import com.dltour.manHanRestaurant.services.OrderService;
-
 import java.util.Date;
 
-//已经创建数据库
 public class RestaurantOrder {
     private int id;
     private Date orderTime;
@@ -49,10 +45,8 @@ public class RestaurantOrder {
 
     @Override
     public String toString() {
-        OrderService os=new OrderService();
-                return "餐座编号:"
-                +os.getTableNum(this.id)
-                +" 订单编号:"+this.id+" 订单时间:"
+                return
+                " 订单编号:"+this.id+" 订单时间:"
                 +this.orderTime+" 订单金额:"
                 +String.format("%.2f",this.money)
                 +"  是否已经支付:"

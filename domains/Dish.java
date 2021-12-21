@@ -1,6 +1,5 @@
 package com.dltour.manHanRestaurant.domains;
 
-//已经创建dish数据库
 public class Dish {
     private int id;
     private String name;

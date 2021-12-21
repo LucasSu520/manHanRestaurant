@@ -11,8 +11,8 @@ import java.util.Scanner;
  */
 public class MainView {
     public static void main(String[] args) {
-        //show();防止检验的时候输入过多变量
-        new MenuView().show();
+        show();//防止检验的时候输入过多变量
+//        new MenuView().show();
 
     }
 

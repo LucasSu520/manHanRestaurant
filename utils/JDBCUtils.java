@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public class JDBCUtils {
+public  class JDBCUtils {
     private static Connection connection;
     private static DataSource ds;
     //用一个静态代码防止二次编译

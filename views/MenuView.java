@@ -1,8 +1,5 @@
 package com.dltour.manHanRestaurant.views;
 
-import com.dltour.manHanRestaurant.daos.RestaurantOrderDao;
-import com.dltour.manHanRestaurant.domains.Customer;
-import com.dltour.manHanRestaurant.domains.RestaurantOrder;
 import com.dltour.manHanRestaurant.domains.Users;
 import com.dltour.manHanRestaurant.services.CustomerService;
 import com.dltour.manHanRestaurant.services.DishService;
@@ -15,11 +12,14 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 public class MenuView {
+    Scanner scanner;
     Users user=null;
-    TableService ts=new TableService();
-    CustomerService customerService=new CustomerService();
+    TableService ts;
+    CustomerService cs;
+    OrderService os;
+    DishService ds;
     Connection connection;
-    private int orderId;
+
 
     public MenuView() {
     }
@@ -36,13 +36,13 @@ public class MenuView {
         this.user = user;
     }
     public void show(){
+        int orderId;
+        String phoneNum;
+        ts=new TableService();
         Boolean loop=true;
-        Scanner scanner;
-        OrderService os=new OrderService();
-        DishService ds=new DishService();
-        String customerPhone;
-        RestaurantOrder ro = null;
-        RestaurantOrderDao rod=new RestaurantOrderDao();
+        cs=new CustomerService();
+        os=new OrderService();
+        ds=new DishService();
 
         while (loop) {
             System.out.println("=====二级管理菜单=====");
@@ -72,12 +72,22 @@ public class MenuView {
                         try {
                             connection = JDBCUtils.getConnection();
                             connection.setAutoCommit(false);
-                            customerService.createCustomer();
-                            Customer customer = customerService.getCustomer();
-                            customerPhone = customer.getPhoneNum();
+                            System.out.println("请输入顾客姓名:");
+                            scanner=new Scanner(System.in);
+                            String name=scanner.next();
+                            System.out.println("请输入顾客电话:");
+                            scanner=new Scanner(System.in);
+                            phoneNum=scanner.next();
+                            //TODO 判断顾客是否已经存在
+                            int customerAffectedRows= cs.createCustomer(name,phoneNum);
+                            if (customerAffectedRows<=0){
+                                System.out.println("系统出现故障,请稍后重试！");
+                                continue;
+                            }
                             //2、让顾客选择餐桌，若餐座不空闲，则无法预定；
-                            customerService.selectTable(customerPhone);
+                            int selectedTableNum= cs.selectTable(phoneNum);
                             //3、如果餐座选定，则开始点菜，选厨师,更改餐座状态
+                            os.order(phoneNum,selectedTableNum);
                             //4、选完就一直等到结账接触餐座状态了；
                         } catch (SQLException e) {
                             e.printStackTrace();
@@ -96,27 +106,55 @@ public class MenuView {
                         ds.showAll();
                     }
                     case 4 -> {
+                        boolean addLoop=true;
                         System.out.println("=====加菜或减菜服务=====");
-                        os.addDish();
+                        System.out.println("请输入要调整订单的订单号");
+                        scanner=new Scanner(System.in);
+                        while (addLoop) {
+                            if (scanner.hasNextInt()) {
+                                orderId = scanner.nextInt();
+                                os.addDish(orderId);
+                                addLoop=false;
+                            } else {
+                                System.out.println("请输入数字");
+                            }
+                        }
                     }
                     case 5 -> {
                         System.out.println("=====查看账单=====");
                         System.out.println("请输入要查看的订单编号(输入0查看全部):");
-                        orderId = scanner.nextInt();
-                        boolean showLoop = true;
-                        if (orderId == 0) {
-                            //展示全部订单编号
-                        }
-                        while (showLoop) {
-                            ro = (RestaurantOrder) rod.querySingle("select * from restaurantOrder where id=?", RestaurantOrder.class, orderId);
-                            if (ro == null) {
-                                System.out.println("抱歉，输入的订单编号错误，请重新输入!");
-                                orderId = scanner.nextInt();
+                        scanner = new Scanner(System.in);
+                        boolean showBillLoop=true;
+                        boolean thirdLoop=true;
+                        while (showBillLoop)
+                        if (scanner.hasNextInt()) {
+                            orderId = scanner.nextInt();
+                            boolean showLoop = true;
+                            if (orderId == 0) {
+                                //TODO 展示全部订单编号
                                 continue;
                             }
-                            showLoop = false;
+                            while (showLoop) {
+                                if (os.getOrder(orderId) == null) {
+                                    System.out.println("抱歉，输入的订单编号错误，请重新输入!");
+                                    while (thirdLoop){
+                                    scanner=new Scanner(System.in);
+                                    if (scanner.hasNextInt()) {
+                                        orderId = scanner.nextInt();
+                                        thirdLoop=false;
+                                    }else {
+                                        System.out.println("输入错误，请输入数字!");
+                                        continue;
+                                        }
+                                    }
+                                }
+                                showLoop = false;
+                            }
+                            os.showOrder(orderId);
+                            showBillLoop=false;
+                        }else {
+                            System.out.println("输入数字错误，请重新输入！");
                         }
-                        os.showOrder(ro);
                     }
                     case 6 -> {
                         os = new OrderService();
