@@ -18,9 +18,10 @@ public class CustomerService {
 
     int tableNum=0;
 
-    //返回创建的用户
-    public  Customer getCustomer(){
-        return this.customer;
+    //根据用户电话返回用户姓名；
+    public String getCustomerName(String phoneNum){
+        cdi=new CustomerDaoImpl();
+        return cdi.getCustomer(phoneNum).getName();
     }
 
     public int createCustomer(String name,String phoneNum){

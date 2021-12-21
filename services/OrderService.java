@@ -18,6 +18,7 @@ public class OrderService {
     Connection connection;
     DishService ds;
     CookService cs;
+    CustomerService customerService;
     RestaurantOrder ro;
     TableService ts;
     List<Dish_Cook> list;
@@ -96,11 +97,13 @@ public class OrderService {
      *展示订单信息
      */
     public void showOrder(int orderId){
-        String customerPhone;
+        customerService=new CustomerService();
         ro=rodi.getOrder(orderId);
-        customerPhone=rodi.getPhoneNum(orderId);
-        //TODO 显示顾客名称
-        System.out.println("餐座编号: "+rodi.getTableNum(orderId)+ro +" 顾客电话:"+customerPhone);
+        String phoneNum;
+        String customerName;
+        phoneNum=rodi.getPhoneNum(orderId);
+        customerName=customerService.getCustomerName(phoneNum);
+        System.out.println("顾客姓名:"+customerName+" 顾客电话:"+phoneNum +" 餐座编号: "+rodi.getTableNum(orderId)+ro );
         System.out.println("============订单详情============");
         System.out.println("菜品          厨师           价格");
         this.showDetail(ro.getId());
