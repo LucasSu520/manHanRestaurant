@@ -106,7 +106,6 @@ public class OrderService {
         System.out.println("顾客姓名:"+customerName+" 顾客电话:"+phoneNum +" 餐座编号: "+rodi.getTableNum(orderId)+ro );
         System.out.println("============订单详情============");
         System.out.println("菜品          厨师           价格");
-        this.showDetail(ro.getId());
     }
 
     /**
@@ -168,7 +167,6 @@ public class OrderService {
         double totalPrice=0;
         boolean dishLoop = true;
         List<Dish_Cook> dishAndCookList =new LinkedList<>();
-        //TODO 在点菜点完后可以删除所点的菜品
         while (dishLoop) {
             System.out.println("请输入用户所选菜编号(输入0表示点菜完成):");
             scanner = new Scanner(System.in);
@@ -210,6 +208,14 @@ public class OrderService {
             }else {
                 System.out.println("输入错误，请输入数字.");
             }
+        }
+    }
+
+    public void showAllOrder() {
+        rodi=new RestaurantOrderDaoImpl();
+        List<RestaurantOrder> orders= rodi.getAllOrder();
+        for (RestaurantOrder order:orders){
+            this.showDetail(order.getId());
         }
     }
 }

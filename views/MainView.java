@@ -1,6 +1,7 @@
 package com.dltour.manHanRestaurant.views;
 
 import com.dltour.manHanRestaurant.domains.Users;
+import com.dltour.manHanRestaurant.services.UserService;
 
 import java.util.Scanner;
 
@@ -17,6 +18,7 @@ public class MainView {
     }
 
     public static void show(){
+        UserService userService=new UserService();
         Scanner scanner;
         Boolean loop=true;
         while (loop) {
@@ -26,8 +28,8 @@ public class MainView {
             System.out.println("请输入你的选择:");
             scanner = new Scanner(System.in);
             if (scanner.hasNextInt()) {
-                int choice = scanner.nextInt();
                 while (true) {
+                    int choice = scanner.nextInt();
                     switch (choice) {
                         case 1 -> {
                             System.out.println("请输入登陆账号（输入-1退出）:");
@@ -39,14 +41,12 @@ public class MainView {
                             System.out.println("请输入密码:");
                             scanner = new Scanner(System.in);
                             String password = scanner.next();
-                            Users user = new Users(userName, password);
-                            if (user.checkUser()) {
+                            if (userService.checkUser(userName,password)) {
                                 System.out.println("欢迎回来: " + userName);
-                                MenuView menuView = new MenuView(user);
+                                MenuView menuView = new MenuView();
                                 menuView.show();
-                            } else {
-                                //TODO 判断是否是密码还是账号错误
-                                System.out.println("账号或者密码错误,请重新输入:");
+                            }else {
+                                System.out.println("请重新选择服务！");
                             }
                         }
                         case 2 -> {

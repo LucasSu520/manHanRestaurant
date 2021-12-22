@@ -89,4 +89,9 @@ public interface RestaurantOrderDao{
      * @param orderId 查询的订单编号
      */
     int getTableNum(int orderId);
+
+    /**
+     * 返回所有的订单
+     */
+    List<RestaurantOrder> getAllOrder();
 }

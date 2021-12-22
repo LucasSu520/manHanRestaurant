@@ -1,6 +1,5 @@
 package com.dltour.manHanRestaurant.views;
 
-import com.dltour.manHanRestaurant.domains.Users;
 import com.dltour.manHanRestaurant.services.CustomerService;
 import com.dltour.manHanRestaurant.services.DishService;
 import com.dltour.manHanRestaurant.services.OrderService;
@@ -13,7 +12,6 @@ import java.util.Scanner;
 
 public class MenuView {
     Scanner scanner;
-    Users user=null;
     TableService ts;
     CustomerService cs;
     OrderService os;
@@ -24,17 +22,6 @@ public class MenuView {
     public MenuView() {
     }
 
-    public MenuView(Users user) {
-        this.user = user;
-    }
-
-    public Users getUser() {
-        return user;
-    }
-
-    public void setUser(Users user) {
-        this.user = user;
-    }
     public void show(){
         int orderId;
         String phoneNum;
@@ -49,7 +36,7 @@ public class MenuView {
             System.out.println("1  查询餐桌状态");
             System.out.println("2  预定餐桌");
             System.out.println("3  显示所有菜品");
-            System.out.println("4  加餐服务");
+            System.out.println("4  加菜或减菜服务");
             System.out.println("5  查看账单");
             System.out.println("6  结账");
             System.out.println("8  切换账号");
@@ -78,7 +65,6 @@ public class MenuView {
                             System.out.println("请输入顾客电话:");
                             scanner=new Scanner(System.in);
                             phoneNum=scanner.next();
-                            //TODO 判断顾客是否已经存在
                             int customerAffectedRows= cs.createCustomer(name,phoneNum);
                             if (customerAffectedRows<=0){
                                 System.out.println("系统出现故障,请稍后重试！");
@@ -131,7 +117,7 @@ public class MenuView {
                             orderId = scanner.nextInt();
                             boolean showLoop = true;
                             if (orderId == 0) {
-                                //TODO 展示全部订单编号
+                                os.showAllOrder();
                                 continue;
                             }
                             while (showLoop) {
@@ -151,6 +137,7 @@ public class MenuView {
                                 showLoop = false;
                             }
                             os.showOrder(orderId);
+                            os.showDetail(orderId);
                             showBillLoop=false;
                         }else {
                             System.out.println("输入数字错误，请重新输入！");
